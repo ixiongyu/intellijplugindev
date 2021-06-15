@@ -33,6 +33,9 @@
       <add-to-group group-id="EditMenu" anchor="first"/>
       <keyboard-shortcut keymap="$default" first-keystroke="shift meta X"/>
     </action>
+    <action id="plugins.translate" class="com.ixiongyu.action.TranslateAction" text="翻译" description="翻译">
+      <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>
+    </action>
   </actions>
 
 </idea-plugin>
