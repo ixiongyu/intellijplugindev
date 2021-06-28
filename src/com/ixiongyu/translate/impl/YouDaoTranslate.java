@@ -25,11 +25,37 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-public class YouDaoTranslate implements ITranslate {
+public class YouDaoTranslate {
 
-    @Override
-    public String translate(String inputStr) {
-        return null;
+    public static String translate(String inputStr) {
+        Map<String, String> params = new HashMap<>();
+        String salt = String.valueOf(System.currentTimeMillis());
+        params.put("from", "auto");
+        params.put("to", "auto");
+        params.put("signType", "v3");
+        String curtime = String.valueOf(System.currentTimeMillis() / 1000);
+        params.put("curtime", curtime);
+        String signStr = APP_KEY + truncate(inputStr) + salt + curtime + APP_SECRET;
+        String sign = getDigest(signStr);
+        params.put("appKey", APP_KEY);
+        params.put("q", inputStr);
+        params.put("salt", salt);
+        params.put("sign", sign);
+//        params.put("vocabId", "您的用户词表ID");
+        /** 处理结果 */
+        String result = null;
+        try {
+            result = requestForHttp(YOUDAO_URL, params);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        YoudaoResult youdaoResult = new Gson().fromJson(result, YoudaoResult.class);
+
+        if (youdaoResult.getErrorCode().equals("0")) {
+            return youdaoResult.getTranslation().toString();
+        } else {
+            return "翻译出错";
+        }
     }
 
     private static final Logger logger = LoggerFactory.getLogger(YouDaoTranslate.class);
@@ -42,26 +68,9 @@ public class YouDaoTranslate implements ITranslate {
 
     public static void main(String[] args) throws IOException {
 
-        Map<String, String> params = new HashMap<>();
-        String q = "你好世界";
-        String salt = String.valueOf(System.currentTimeMillis());
-        params.put("from", "auto");
-        params.put("to", "auto");
-        params.put("signType", "v3");
-        String curtime = String.valueOf(System.currentTimeMillis() / 1000);
-        params.put("curtime", curtime);
-        String signStr = APP_KEY + truncate(q) + salt + curtime + APP_SECRET;
-        String sign = getDigest(signStr);
-        params.put("appKey", APP_KEY);
-        params.put("q", q);
-        params.put("salt", salt);
-        params.put("sign", sign);
-        params.put("vocabId", "您的用户词表ID");
-        /** 处理结果 */
-        String result = requestForHttp(YOUDAO_URL, params);
-        YoudaoResult youdaoResult = new Gson().fromJson(result, YoudaoResult.class);
-        System.out.println(youdaoResult);
+
     }
+
 
     public static String requestForHttp(String url, Map<String, String> params) throws IOException {
 
